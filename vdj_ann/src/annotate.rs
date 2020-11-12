@@ -1807,7 +1807,7 @@ pub fn annotate_seq_core(
     let mut j = 0;
     let mut nonsimple = false;
     let mut have_split = false;
-    let max_indel = 27;
+    let max_indel = 40;
     let min_len_gain = 100;
     while j < vs.len() {
         let k = next_diff1_2(&mut vs, j as i32) as usize;
