@@ -1,4 +1,4 @@
-// Copyright (c) 2018 10X Genomics, Inc. All rights reserved.
+// Copyright (c) 2021 10X Genomics, Inc. All rights reserved.
 
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 // TOP LEVEL DOCUEMENTATION
@@ -513,12 +513,16 @@ fn test_in_allocator() -> bool {
     // seem necessary here (and would require plumbing to compile anyway).
     // let _guard = ::lock::lock();
     trace(|frame| {
+        if verbose {
+            eprintln!("at top of trace loop");
+        }
         resolve(frame.ip() as *mut _, |symbol| {
             if verbose && in_alloc {
                 // For unknown reasons, this happens on a mac.
                 eprintln!("should not be here");
             }
-            if verbose {
+            if verbose && !in_alloc {
+                eprintln!("about to write symbol name");
                 eprintln!("symbol name = {:?}", symbol.name());
                 if symbol.name().is_some() {
                     eprintln!("= {}", symbol.name().unwrap().as_str().unwrap());
@@ -537,12 +541,14 @@ fn test_in_allocator() -> bool {
                     || x.as_str().unwrap().contains( "alloc5alloc" )
                     // added because this causes crashes
                     || x.as_str().unwrap().starts_with("pthread_cond_wait")
+                    || x.as_str().unwrap().starts_with("cfree@")
                 {
                     if verbose {
                         eprintln!("in allocator");
                     }
                     in_alloc = true;
-                    // break;
+                    return;
+                    // break; // cannot break inside closure
                 }
             }
         });
@@ -625,6 +631,7 @@ extern "C" fn handler(sig: i32) {
             }
             return;
         }
+        eprintln!("doing backtrace"); // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
         // Now do the backtrace.
 
