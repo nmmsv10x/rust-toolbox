@@ -512,6 +512,7 @@ fn test_in_allocator() -> bool {
     // The following lock line (copied from the Backtrace crate) doesn't
     // seem necessary here (and would require plumbing to compile anyway).
     // let _guard = ::lock::lock();
+    eprintln!("start trace loop"); // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     trace(|frame| {
         if verbose {
             eprintln!("at top of trace loop");
@@ -548,7 +549,6 @@ fn test_in_allocator() -> bool {
                     }
                     in_alloc = true;
                     return;
-                    // break; // cannot break inside closure
                 }
             }
         });
@@ -648,7 +648,8 @@ extern "C" fn handler(sig: i32) {
         for x in HAPPENING.lock().unwrap().whitelist.iter() {
             whitelist.push(x.clone());
         }
-        fwriteln!(tf, "{}", prettify_traceback(&backtrace, &whitelist, true));
+        eprintln!("{}", prettify_traceback(&backtrace, &whitelist, true));
+        // fwriteln!(tf, "{}", prettify_traceback(&backtrace, &whitelist, true));
         unsafe {
             PROCESSING_SIGUSR1 = false;
         }
